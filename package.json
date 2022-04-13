@@ -1,0 +1,28 @@
+{
+  "type": "module",
+  "name": "typeracer",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "apify": "^1.2.1",
+    "autocorrect": "^1.2.0",
+    "axios": "^0.26.1",
+    "cloudmersive-nlp-api-client": "^2.1.1",
+    "cloudmersive-ocr-api-client": "^1.3.3",
+    "cloudmersive-validate-api-client": "^1.4.6",
+    "form-data": "^4.0.0",
+    "hex": "^0.1.0",
+    "image-downloader": "^4.1.0",
+    "jimp": "^0.16.1",
+    "node-fetch": "^3.2.3",
+    "puppeteer": "^10.0.0",
+    "string-similarity": "^4.0.4"
+  }
+}
