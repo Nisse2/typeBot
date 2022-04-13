@@ -12,7 +12,7 @@ note: set ```headless: false``` in ```runner.js``` to see it in action
 ## Solving the problem
 1. play typeracer, when capthca comes up, take image url
 
-2. download image into ram and run through converter that removes black lines and noise, then download into ./tmp/tmp.jpg
+2. download image into ram and run through converter that removes black lines and noise, then save to ./tmp/tmp.jpg
 
 3.  go to https://www.prepostseo.com/image-to-text and upload image
 
