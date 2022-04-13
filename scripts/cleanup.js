@@ -14,7 +14,7 @@ export default async (string) => {
   let totalOffset = 0;
   for (let match of matches) {
     // let match = matches[0];
-    console.log(match);
+    // console.log(match);
     let replacement = match.replacements[0].value;
     // console.log(replacement);
     // console.log(match.offset, match.length);
