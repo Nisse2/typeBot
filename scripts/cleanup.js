@@ -8,12 +8,14 @@ export default async (string) => {
     "body": "data=%7B%22text%22%3A%22" + string + "%22%7D&textSessionId=35069%3A1649698031896&enableHiddenRules=true&level=picky&language=auto&noopLanguages=en%2Csv&preferredLanguages=en%2Csv&preferredVariants=en-US%2Cde-DE%2Cpt-PT%2Cca-es&disabledRules=WHITESPACE_RULE%2CCONSECUTIVE_SPACES&useragent=webextension-chrome-ng&mode=allButTextLevelOnly&allowIncompleteResults=true",
     "method": "POST"
   });
+  if (res.status == 400) console.log(res);
+
 
   let matches = (await res.json()).matches;
 
   let totalOffset = 0;
   for (let match of matches) {
-    // let match = matches[0];
+    if (match.replacements.length == 0) continue;
     // console.log(match);
     let replacement = match.replacements[0].value;
     // console.log(replacement);

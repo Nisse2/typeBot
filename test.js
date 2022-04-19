@@ -4,17 +4,23 @@ import imgToText from './scripts/imgToText.js';
 import jimp from 'jimp';
 import fs from 'fs';
 import cleanup from './scripts/cleanup.js';
+import Tesseract from 'tesseract.js';
 
 (async () => {
-  cleanup(`
-  Alice laud hed so much at this, that she had brought herself down to look down and saying to herself This is Bill, she gave one sharp kick, and waited to
-====
-=
-=
-=
-=
-  `
-  );
+  // Tesseract.recognize( 'https://tesseract.projectnaptha.com/img/eng_bw.png', 'eng', { logger: m => console.log(m) }).then(({ data: { text } }) => { console.log(text); });
+  let ocrRes = await Tesseract.recognize('https://tesseract.projectnaptha.com/img/eng_bw.png', 'eng');
+  let text = ocrRes.data.text;
+  console.log(text);
+
+  //   cleanup(`
+  //   Alice laud hed so much at this, that she had brought herself down to look down and saying to herself This is Bill, she gave one sharp kick, and waited to
+  // ====
+  // =
+  // =
+  // =
+  // =
+  //   `
+  //   );
   // let imgUrl = 'https://play.typeracer.com/challenge?id=1649848249035guest:56297712105194';
   // let image = await converter(imgUrl);
 

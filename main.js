@@ -4,6 +4,7 @@ import puppeteer from 'puppeteer';
 import cleanup from './scripts/cleanup.js';
 import converter from './scripts/converter.js';
 import imgToText from './scripts/imgToText.js';
+import Tesseract from 'tesseract.js';
 
 // const { findDuplicates, removeDuplicates } = require('./imgDuplicateRemover/index.js');
 function delay (time) {
@@ -28,7 +29,7 @@ const closePopup = async (page) => {
     //if error (timeout) return, else click
     return;
   }
-  console.log("closing popup");
+  console.log("[info] closing popup");
   await page.click('.xButton');
 };
 
@@ -76,14 +77,14 @@ const closePopup = async (page) => {
 
   let textSelector = "#gwt-uid-20 > table > tbody > tr:nth-child(2) > td > table > tbody > tr:nth-child(1) > td > table > tbody > tr:nth-child(1) > td > div > div";
   await page.waitForSelector(textSelector);
-  console.log("checking...");
+  console.log("[info] checking...");
   let elem = await page.$(textSelector);
   let text = await page.evaluate(el => el.textContent, elem);
   console.log(text);
 
   await delay(4500);
 
-  console.log('typing...');
+  console.log('[info] typing...');
   await page.focus("#gwt-uid-20 > table > tbody > tr:nth-child(2) > td > table > tbody > tr:nth-child(2) > td > input");
   // await delay(5000);
   // page.keyboard.type(text);
@@ -117,49 +118,59 @@ const closePopup = async (page) => {
   // text = await imgToText(image);
 
 
-  const pageOcr = await browser.newPage();
+  // let ocrRes = await Tesseract.recognize('https://tesseract.projectnaptha.com/img/eng_bw.png', 'eng');
+  console.log('[info] convertingToText...');
+  let ocrRes = await Tesseract.recognize('./tmp/tmp.jpg', 'eng');
+  text = ocrRes.data.text;
+  console.log(text);
 
-  await pageOcr.setViewport({
-    width: 1920,
-    height: 1440,
-    deviceScaleFactor: 1,
-  });
+  // const pageOcr = await browser.newPage();
 
-  await pageOcr.bringToFront();
-  await pageOcr.goto('https://www.prepostseo.com/image-to-text');
+  // await pageOcr.setViewport({
+  //   width: 1920,
+  //   height: 1440,
+  //   deviceScaleFactor: 1,
+  // });
 
-  await click(pageOcr, '#accept-choices'); //cookies
+  // await pageOcr.bringToFront();
+  // await pageOcr.goto('https://www.prepostseo.com/image-to-text');
 
-  console.log("uploading...");
-  const elementHandle = await pageOcr.$("input[type=file]");
-  await elementHandle.uploadFile('./tmp/tmp.jpg');
+  // await click(pageOcr, '#accept-choices'); //cookies
 
-  // await delay(100000000);
+  // console.log("uploading...");
+  // const elementHandle = await pageOcr.$("input[type=file]");
+  // await elementHandle.uploadFile('./tmp/tmp.jpg');
 
-  console.log("clicking submit...");
+  // // await delay(100000000);
 
-  await pageOcr.waitForSelector("#checkBtn");
-  await delay(100);
-  await pageOcr.click("#checkBtn");
+  // console.log("clicking submit...");
+
+  // await pageOcr.waitForSelector("#checkBtn");
+  // await delay(100);
+  // await pageOcr.click("#checkBtn");
 
 
 
-  await pageOcr.waitForSelector('#ouput-content');
-  console.log('extracting text (waiting for api)...');
-  await pageOcr.waitForFunction(
-    'document.querySelector("#ouput-content").innerText != " Extracting Text"'
-  );
+  // await pageOcr.waitForSelector('#ouput-content');
+  // console.log('extracting text (waiting for api)...');
+  // await pageOcr.waitForFunction(
+  //   'document.querySelector("#ouput-content").innerText != " Extracting Text"'
+  // );
 
-  elem = await pageOcr.$('#ouput-content');
-  text = await pageOcr.evaluate(el => el.textContent, elem);
+  // elem = await pageOcr.$('#ouput-content');
+  // text = await pageOcr.evaluate(el => el.textContent, elem);
+
+  // await page.bringToFront();
+
+
+  console.log('[info] cleaning up text...');
   text = await cleanup(text);
 
 
-  await page.bringToFront();
-
+  //TODO: automatic retry
 
   await delay(100);
-  console.log("[2] typing: ", text);
+  console.log("[info] typing: ", text);
   await page.focus(".challengeTextArea");
   // await page.keyboard.type(text);
   for (let c of text) {
