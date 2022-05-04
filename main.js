@@ -1,10 +1,14 @@
 import puppeteer from 'puppeteer';
+// import puppeteer from 'puppeteer-extra';
+import { PythonShell } from 'python-shell';
 
 // import download from './scripts/downloader.js';
 import cleanup from './scripts/cleanup.js';
 import converter from './scripts/converter.js';
 import imgToText from './scripts/imgToText.js';
 import Tesseract from 'tesseract.js';
+import userAgent from 'user-agents';
+import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 
 // const { findDuplicates, removeDuplicates } = require('./imgDuplicateRemover/index.js');
 function delay (time) {
@@ -34,8 +38,7 @@ const closePopup = async (page) => {
 };
 
 (async () => {
-
-  // console.log(await cleanup('It sounded an excellent plan, no doub and very neatly and simply arranged the only difficulty was, that she ought to be going messages for a rabbit .'));
+  // puppeteer.use(StealthPlugin());
 
   const browser = await puppeteer.launch({
     fullscreen: true,
@@ -63,9 +66,12 @@ const closePopup = async (page) => {
     }
     // Add a new header for navigation request.
     const headers = request.headers();
-    headers['user-agent'] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Safari/537.36";
+    // headers['user-agent'] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Safari/537.36";
+    headers['user-agent'] = userAgent.toString();
     request.continue({ headers });
   });
+  // await page.setUserAgent(userAgent.toString());
+
 
 
   await page.goto('https://play.typeracer.com/');
@@ -80,11 +86,10 @@ const closePopup = async (page) => {
   console.log("[info] checking...");
   let elem = await page.$(textSelector);
   let text = await page.evaluate(el => el.textContent, elem);
-  console.log(text);
 
   await delay(4500);
 
-  console.log('[info] typing...');
+  console.log(`[info] typing: "${text}"`);
   await page.focus("#gwt-uid-20 > table > tbody > tr:nth-child(2) > td > table > tbody > tr:nth-child(2) > td > input");
   // await delay(5000);
   // page.keyboard.type(text);
@@ -120,47 +125,68 @@ const closePopup = async (page) => {
 
   // let ocrRes = await Tesseract.recognize('https://tesseract.projectnaptha.com/img/eng_bw.png', 'eng');
   console.log('[info] convertingToText...');
-  let ocrRes = await Tesseract.recognize('./tmp/tmp.jpg', 'eng');
-  text = ocrRes.data.text;
-  console.log(text);
+  // let ocrRes = await Tesseract.recognize('./tmp/tmp.jpg', 'eng');
+  // text = ocrRes.data.text;
+  // console.log(text);
 
-  // const pageOcr = await browser.newPage();
+  const pageOcr = await browser.newPage();
 
-  // await pageOcr.setViewport({
-  //   width: 1920,
-  //   height: 1440,
-  //   deviceScaleFactor: 1,
-  // });
+  await pageOcr.setViewport({
+    width: 2560,
+    height: 2000,
+    deviceScaleFactor: 1,
+  });
 
-  // await pageOcr.bringToFront();
-  // await pageOcr.goto('https://www.prepostseo.com/image-to-text');
+  await pageOcr.bringToFront();
+  await pageOcr.goto('https://www.prepostseo.com/image-to-text');
 
-  // await click(pageOcr, '#accept-choices'); //cookies
+  await click(pageOcr, '#accept-choices'); //cookies
 
-  // console.log("uploading...");
-  // const elementHandle = await pageOcr.$("input[type=file]");
-  // await elementHandle.uploadFile('./tmp/tmp.jpg');
+  console.log("[info] uploading...");
+  const elementHandle = await pageOcr.$("input[type=file]");
+  await elementHandle.uploadFile('./tmp/tmp.jpg');
 
-  // // await delay(100000000);
 
-  // console.log("clicking submit...");
 
-  // await pageOcr.waitForSelector("#checkBtn");
-  // await delay(100);
-  // await pageOcr.click("#checkBtn");
+  // let captchaSelector = '#recaptcha-anchor'; //.recaptcha-checkbox-border';
+
+  await delay(3000);
+
+  console.log("[info] solving captcha...");
+  // await pageOcr.click(captchaSelector);
+  PythonShell.run('clicker.py', null, function (err) {
+    if (err) throw err;
+    console.log('[info] clicked');
+  });
+
+
+
+
+  await delay(1000);
+
+
+
+  await pageOcr.waitForSelector("#checkBtn");
+  await delay(100);
+  console.log("[info] clicking submit...");
+  await pageOcr.click("#checkBtn");
 
 
 
   // await pageOcr.waitForSelector('#ouput-content');
-  // console.log('extracting text (waiting for api)...');
-  // await pageOcr.waitForFunction(
-  //   'document.querySelector("#ouput-content").innerText != " Extracting Text"'
-  // );
+  await pageOcr.waitForSelector('.textContainer');
+
+  console.log('[info] extracting text (waiting for api)...');
+  await pageOcr.waitForFunction(
+    // 'document.querySelector("#ouput-content").innerText != " Extracting Text"'
+    'document.querySelector(".textContainer").innerText != " Extracting Text"'
+  );
 
   // elem = await pageOcr.$('#ouput-content');
-  // text = await pageOcr.evaluate(el => el.textContent, elem);
+  elem = await pageOcr.$('.textContainer');
+  text = await pageOcr.evaluate(el => el.textContent, elem);
 
-  // await page.bringToFront();
+  await page.bringToFront();
 
 
   console.log('[info] cleaning up text...');
@@ -170,7 +196,7 @@ const closePopup = async (page) => {
   //TODO: automatic retry
 
   await delay(100);
-  console.log("[info] typing: ", text);
+  console.log(`[info] typing: "${text}"`);
   await page.focus(".challengeTextArea");
   // await page.keyboard.type(text);
   for (let c of text) {
@@ -178,7 +204,7 @@ const closePopup = async (page) => {
     await delay(10);
   }
 
-  await delay(4000);
+  // await delay(4000);
   await click(page, submitSelector);
 
   // await browser.close();

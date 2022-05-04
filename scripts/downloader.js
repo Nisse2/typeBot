@@ -117,7 +117,7 @@ export default async () => {
   // console.log(imgUrl);
   let time = new Date();
   await downloadImage(imgUrl, `./images/${time.getTime()}.jpg`);
-  console.log("done!");
+  // console.log("done!");
 
 
   // downloadImage(imgUrl, 'C:/dev/typeracer/images/img.jpg');

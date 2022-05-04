@@ -108,7 +108,7 @@ export default async (url) => {
   // await mask.writeAsync("./readmeImages/mask.jpg");
 
   // await image.writeAsync("./readmeImages/example2.jpg");
-  console.log("done");
+  // console.log("done");
   return image;
 
 };
