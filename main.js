@@ -1,16 +1,10 @@
 import puppeteer from 'puppeteer';
-// import puppeteer from 'puppeteer-extra';
 import { PythonShell } from 'python-shell';
 
-// import download from './scripts/downloader.js';
 import cleanup from './scripts/cleanup.js';
 import converter from './scripts/converter.js';
-import imgToText from './scripts/imgToText.js';
-import Tesseract from 'tesseract.js';
 import userAgent from 'user-agents';
-import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 
-// const { findDuplicates, removeDuplicates } = require('./imgDuplicateRemover/index.js');
 function delay (time) {
   return new Promise(function (resolve) {
     setTimeout(resolve, time);
@@ -26,11 +20,6 @@ const closePopup = async (page) => {
   try {
     await page.waitForSelector('.xButton', { timeout: 8000 });
   } catch (e) {
-    // if (!(e instanceof TimeoutError)) {
-    //   console.log("closing popup");
-    //   await page.click('.xButton');
-    // }
-    //if error (timeout) return, else click
     return;
   }
   console.log("[info] closing popup");
@@ -38,7 +27,6 @@ const closePopup = async (page) => {
 };
 
 (async () => {
-  // puppeteer.use(StealthPlugin());
 
   const browser = await puppeteer.launch({
     fullscreen: true,
@@ -46,7 +34,6 @@ const closePopup = async (page) => {
     // 'args': ['--no-sandbox', '--disable-setuid-sandbox', '--start-fullscreen']
     'args': ['--no-sandbox', '--disable-setuid-sandbox', '--start-maximized']
   });
-
 
   const page = await browser.newPage();
 
@@ -70,16 +57,13 @@ const closePopup = async (page) => {
     headers['user-agent'] = userAgent.toString();
     request.continue({ headers });
   });
-  // await page.setUserAgent(userAgent.toString());
-
 
 
   await page.goto('https://play.typeracer.com/');
 
-  await click(page, ".css-47sehv");
-  await click(page, ".gwt-Anchor.prompt-button.bkgnd-blue"); // play solo 
+  await click(page, ".css-47sehv"); // accept cookies button
 
-
+  await click(page, ".gwt-Anchor.prompt-button.bkgnd-blue"); // play solo button
 
   let textSelector = "#gwt-uid-20 > table > tbody > tr:nth-child(2) > td > table > tbody > tr:nth-child(1) > td > table > tbody > tr:nth-child(1) > td > div > div";
   await page.waitForSelector(textSelector);
@@ -97,31 +81,22 @@ const closePopup = async (page) => {
     await page.keyboard.type(c);
     await delay(80);
   }
+
   closePopup(page);
   await click(page, "body > div.DialogBox.trPopupDialog.challengePromptDialog > div > div > div.dialogContent > div > div > table > tbody > tr:nth-child(4) > td > button"); //train by myself
-  // await delay(40);
 
-  let cheatTextSelector = "body > div.DialogBox.trPopupDialog.typingChallengeDialog > div > div > div.dialogContent > div > div > table > tbody > tr:nth-child(4) > td > textarea";
-  let imageSelector = ".challengeImg";
   let submitSelector = "body > div.DialogBox.trPopupDialog.typingChallengeDialog > div > div > div.dialogContent > div > div > table > tbody > tr:nth-child(5) > td > table > tbody > tr > td:nth-child(2) > button";
-
-  // await page.waitForSelector(".challengeTextArea");
-  // await delay(100);
-
-  //Get captcha text
-  //DO the request multiple times to get multiple lines and then take avarage.
-  await page.waitForSelector(imageSelector);
-  let imgUrl = 'https://play.typeracer.com/' + await page.$eval(imageSelector, img => img.getAttribute('src'));
-
-
 
   // let imgUrl = 'https://play.typeracer.com/challenge?id=1649848249035guest:56297712105194';
 
+  //Get captcha text
+  let imageSelector = ".challengeImg";
+  await page.waitForSelector(imageSelector);
+  let imgUrl = 'https://play.typeracer.com/' + await page.$eval(imageSelector, img => img.getAttribute('src'));
+
+  //modify image and download
   let image = await converter(imgUrl);
   await image.writeAsync("./tmp/tmp.jpg");
-
-  // text = await imgToText(image);
-
 
   // let ocrRes = await Tesseract.recognize('https://tesseract.projectnaptha.com/img/eng_bw.png', 'eng');
   console.log('[info] convertingToText...');
@@ -187,7 +162,6 @@ const closePopup = async (page) => {
   text = await pageOcr.evaluate(el => el.textContent, elem);
 
   await page.bringToFront();
-
 
   console.log('[info] cleaning up text...');
   text = await cleanup(text);
